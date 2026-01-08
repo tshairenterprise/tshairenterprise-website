@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* White Background */
+    --background: 0 0% 100%;
+    /* Dark Text */
+    --foreground: 222.2 84% 4.9%;
+
+    /* CARD COLORS */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* PRIMARY COLOR: TS Hair Purple */
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+
+    /* SECONDARY COLORS */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* ERROR/DESTRUCTIVE */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* BORDERS & INPUTS */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+
+    /* RADIUS */
+    --radius: 1rem;
+  }
+
+  /* Dark Mode Variables */
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  /* Smooth Animations for Theme Switching */
+  *, *::before, *::after {
+    @apply transition-colors duration-500 ease-in-out;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  * {
+    @apply border-border;
+  }
+}
+
+/* ✅ CUSTOM SCROLLBAR STYLES */
+@layer utilities {
+  /* For Webkit Browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-slate-700 rounded-full border-[2px] border-solid border-transparent bg-clip-content;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-slate-600;
+  }
+
+  /* Specific class to hide scrollbar but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+  }
+  .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+  }
+}
+
+@layer components {
+  /* --- 1. FRONTEND RICH TEXT DISPLAY FIX --- */
+  .rich-text-content {
+    @apply text-gray-600 dark:text-slate-300 text-sm leading-relaxed;
+  }
+
+  /* Force remove background colors copied from other sites */
+  .rich-text-content * {
+    background-color: transparent !important;
+    color: inherit !important;
+  }
+
+  .rich-text-content p { @apply mb-2; }
+  .rich-text-content ul { @apply list-disc ml-5 mb-3; }
+  .rich-text-content ol { @apply list-decimal ml-5 mb-3; }
+  .rich-text-content li { @apply mb-1 pl-1; }
+  
+  /* Headings & Bold specific overrides */
+  .rich-text-content strong, .rich-text-content b { 
+    @apply font-bold text-gray-900 dark:text-white; 
+  }
+  .rich-text-content h1, .rich-text-content h2, .rich-text-content h3 {
+    @apply text-gray-900 dark:text-white font-bold mt-4 mb-2;
+  }
+}
+
+/* --- 2. ADMIN PANEL EDITOR (REACT QUILL) DARK MODE FIX --- */
+/* Editor Container */
+.dark .ql-container.ql-snow {
+  border-color: #1e293b !important; /* slate-800 */
+  background-color: #020617 !important; /* slate-950 */
+  color: #e2e8f0 !important; /* slate-200 */
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+}
+
+/* Toolbar */
+.dark .ql-toolbar.ql-snow {
+  border-color: #1e293b !important;
+  background-color: #0f172a !important; /* slate-900 */
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+}
+
+/* Editor Placeholder Text */
+.dark .ql-editor.ql-blank::before {
+  color: #64748b !important; /* slate-500 */
+  font-style: normal;
+}
+
+/* Toolbar Icons (SVG Fix for Dark Mode) */
+.dark .ql-snow .ql-stroke {
+  stroke: #cbd5e1 !important; /* slate-300 */
+}
+.dark .ql-snow .ql-fill {
+  fill: #cbd5e1 !important;
+}
+.dark .ql-snow .ql-picker {
+  color: #cbd5e1 !important;
+}
+
+/* Active State in Toolbar */
+.dark .ql-snow .ql-active .ql-stroke {
+  stroke: #a78bfa !important; /* primary color */
+}
