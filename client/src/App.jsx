@@ -46,7 +46,12 @@ const PublicLayout = () => {
   return (
     <>
       <Navbar />
-      <main className="pt-20 min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      {/* ✅ FIX: Removed 'pt-20'. 
+         Ab Hero section ka background directly top (0px) se start hoga 
+         aur Navbar ke piche beautifully blend karega.
+         Components (Hero, Shop etc.) apni spacing khud handle karenge.
+      */}
+      <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
         <Outlet />
       </main>
       <Footer />
@@ -57,13 +62,13 @@ const PublicLayout = () => {
 // Home Page Component
 const Home = () => (
   <>
-    {/* Injecting Homepage SEO Strategy */}
+    {/* Injecting Homepage SEO Strategy (As per your request, No Changes) */}
     <SEO
       title="Best Human Hair Exporter in Beldanga | Manufacturer & Supplier"
       description="Direct from factory in Beldanga, Murshidabad. TS Hair Enterprise exports premium Bulk, Weft, and Temple hair globally. Wholesale prices for salons & distributors."
       keywords="Best human hair exporter in Beldanga, Human hair manufacturer Beldanga, Hair supplier Murshidabad, Raw Indian hair factory West Bengal, Bulk hair wholesale India"
     />
-    
+
     <Hero />
     <ProductSection />
     <MostSelling />

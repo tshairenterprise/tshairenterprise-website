@@ -42,9 +42,12 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
-// JWT Token Generator
-const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+// ✅ JWT Token Generator (Critical Helper)
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
+};
 
 // Helper: Extract Public ID from Cloudinary URL (for deletion)
 const getPublicIdFromUrl = (url) => {
@@ -116,7 +119,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
 
     const userCount = await User.countDocuments({});
-    const isAdmin = userCount === 0; // First user is Admin
+    const isAdmin = userCount === 0; // First user is Admin automatically
 
     const user = await User.create({
       name,
@@ -142,6 +145,7 @@ router.post("/", async (req, res) => {
 });
 
 // @route   PUT /api/users/profile
+// @desc    Update user profile (Name, Password, Avatar, WhatsApp)
 router.put("/profile", protect, upload.single("avatar"), async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -155,19 +159,24 @@ router.put("/profile", protect, upload.single("avatar"), async (req, res) => {
     }
 
     // Avatar Upload Logic
-    if (req.file && cloudinary.config().cloud_name) {
-      if (user.avatar) {
-        const publicId = getPublicIdFromUrl(user.avatar);
-        if (publicId) {
-          await cloudinary.uploader
-            .destroy(publicId)
-            .catch((err) =>
-              console.warn("Old avatar delete failed:", err.message)
-            );
+    if (req.file) {
+      // Check Cloudinary Config first
+      if (cloudinary.config().cloud_name) {
+        // Delete old avatar if exists
+        if (user.avatar) {
+          const publicId = getPublicIdFromUrl(user.avatar);
+          if (publicId) {
+            await cloudinary.uploader
+              .destroy(publicId)
+              .catch((err) =>
+                console.warn("Old avatar delete failed:", err.message)
+              );
+          }
         }
+        // Upload new avatar
+        const imageUrl = await uploadToCloudinary(req.file.buffer);
+        user.avatar = imageUrl;
       }
-      const imageUrl = await uploadToCloudinary(req.file.buffer);
-      user.avatar = imageUrl;
     }
 
     const updatedUser = await user.save();
@@ -188,7 +197,7 @@ router.put("/profile", protect, upload.single("avatar"), async (req, res) => {
 });
 
 // ============================================================================
-//                            PASSWORD RESET ROUTES
+//                              PASSWORD RESET ROUTES
 // ============================================================================
 
 // @route   POST /api/users/forgotpassword
@@ -217,8 +226,9 @@ router.post("/forgotpassword", async (req, res) => {
 
     await user.save();
 
-    // Create Reset URL
-    const resetUrl = `http://localhost:5173/resetpassword/${resetToken}`;
+    // ✅ FIX: Dynamic Client URL for Production
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const resetUrl = `${clientUrl}/resetpassword/${resetToken}`;
 
     const msg = {
       to: user.email,
@@ -266,11 +276,9 @@ router.post("/forgotpassword", async (req, res) => {
       console.log("DEV RESET LINK (Email Failed):", resetUrl);
       console.log("---------------------------------------");
 
-      return res
-        .status(500)
-        .json({
-          message: "Email could not be sent. Check console for Dev Link.",
-        });
+      return res.status(500).json({
+        message: "Email could not be sent. Check console for Dev Link.",
+      });
     }
   } catch (error) {
     console.error("Forgot Password Error:", error);
@@ -302,8 +310,7 @@ router.put("/resetpassword/:resetToken", async (req, res) => {
 
     await user.save();
 
-    // ✅ FIX: Return Full User Object (Just like Login/Register)
-    // This ensures local storage has name, email, avatar, etc.
+    // ✅ Return Full User Object with Token (Auto Login after Reset)
     res.json({
       _id: user._id,
       name: user.name,
@@ -320,8 +327,7 @@ router.put("/resetpassword/:resetToken", async (req, res) => {
 });
 
 // @route   GET /api/users/admin-exists
-// @desc    Check if any admin user exists
-// @access  Public
+// @desc    Check if any admin user exists (Used for initial setup)
 router.get("/admin-exists", async (req, res) => {
   try {
     const adminCount = await User.countDocuments({ isAdmin: true });

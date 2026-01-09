@@ -3,10 +3,10 @@ import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, ShieldCheck, Loader2, LogOut } from "lucide-react";
+import { Upload, ShieldCheck, Loader2, Save } from "lucide-react";
 import { sooner } from "@/components/ui/use-sooner.jsx";
 
-const ProfileTab = ({ user, setUser, handleLogout }) => {
+const ProfileTab = ({ user, setUser }) => {
     const [name, setName] = useState(user.name);
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,16 +25,14 @@ const ProfileTab = ({ user, setUser, handleLogout }) => {
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
-
         if (password && password !== confirmPassword) {
-            sooner.error("Password Mismatch", "Naya password aur confirmation password match nahi kar rahe hain.");
+            sooner.error("Password Mismatch", "Passwords do not match.");
             return;
         }
 
-        // 1. Loading Sooner Start
-        const loadingSooner = sooner.loading("Updating Profile", "Aapka profile data server par save ho raha hai...");
-
+        const loadingSooner = sooner.loading("Updating Profile", "Syncing your data...");
         setUpdateLoading(true);
+
         try {
             const formData = new FormData();
             formData.append('name', name);
@@ -49,97 +47,95 @@ const ProfileTab = ({ user, setUser, handleLogout }) => {
             setUser(data);
 
             loadingSooner.update({
-                title: "Profile Updated!",
-                description: "Aapka account safaltapoorvak update ho gaya hai.",
+                title: "Success",
+                description: "Profile updated successfully.",
                 variant: "success",
                 duration: 3000
             });
 
             setPassword("");
             setConfirmPassword("");
-
             setTimeout(() => window.location.reload(), 1000);
 
         } catch (error) {
-            const errorMessage = error.response?.data?.message || "Profile update mein gadbadi hui.";
-
             loadingSooner.update({
-                title: "Update Failed",
-                description: errorMessage,
+                title: "Error",
+                description: error.response?.data?.message || "Update failed.",
                 variant: "destructive",
                 duration: 5000
             });
-
         } finally {
             setUpdateLoading(false);
         }
     };
 
     return (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6 md:space-y-8">
+        <div className="space-y-8">
             <div>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">Profile Settings</h3>
-                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Update your personal information.</p>
+                <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white">Profile Settings</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Manage your personal information and security.</p>
             </div>
 
-            <form onSubmit={handleUpdateProfile} className="space-y-6 md:space-y-8">
-                {/* Avatar Section */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-[1.5rem] border border-gray-100 dark:border-slate-800 shadow-xl shadow-gray-100/50 dark:shadow-none flex flex-col sm:flex-row items-center gap-6 md:gap-8">
-                    <div className="relative group cursor-pointer shrink-0">
-                        <div className="absolute -inset-1 bg-gradient-to-br from-primary to-purple-400 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
-                        <Avatar className="h-24 w-24 md:h-28 md:w-28 border-4 border-white dark:border-slate-800 shadow-sm relative z-10">
+            <form onSubmit={handleUpdateProfile} className="space-y-8">
+
+                {/* 1. Avatar Section (Floating Card) */}
+                <div className="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-[2rem] bg-gray-50/80 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800">
+                    <div className="relative group cursor-pointer">
+                        <div className="absolute -inset-1 bg-gradient-to-tr from-primary to-blue-500 rounded-full blur opacity-40 group-hover:opacity-70 transition-opacity"></div>
+                        <Avatar className="h-28 w-28 border-4 border-white dark:border-slate-950 relative shadow-xl">
                             <AvatarImage src={previewAvatar} className="object-cover" />
-                            <AvatarFallback className="bg-gray-900 dark:bg-slate-700 text-white text-3xl font-bold">
-                                {user.name?.charAt(0).toUpperCase()}
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-slate-900 text-white text-3xl font-bold">{user.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div className="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                            <Upload className="h-6 w-6 text-white mb-1" />
-                            <span className="text-[8px] md:text-[10px] text-white font-bold uppercase tracking-wide">Upload</span>
+
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <Upload className="h-6 w-6 text-white" />
                         </div>
-                        <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" onChange={handleFileChange} accept="image/*" />
+                        <input type="file" className="absolute inset-0 cursor-pointer opacity-0 z-20" onChange={handleFileChange} accept="image/*" />
                     </div>
+
                     <div className="text-center sm:text-left space-y-2">
-                        <h4 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Profile Picture</h4>
-                        <p className="text-xs text-gray-500 dark:text-slate-400 max-w-[200px] mx-auto sm:mx-0">Click image to upload. <br className="hidden sm:block" />Recommended size: 500x500px.</p>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-[10px] font-bold rounded-full border border-purple-100 dark:border-purple-800 uppercase tracking-wider">
-                            <ShieldCheck className="h-3 w-3" />
-                            {user.isAdmin ? 'Administrator' : 'Verified Customer'}
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm">
+                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">{user.isAdmin ? 'Admin' : 'Verified User'}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 max-w-[200px]">
+                            Tap the image to upload a new photo. <br />JPG, PNG or WEBP.
+                        </p>
+                    </div>
+                </div>
+
+                {/* 2. Form Fields */}
+                <div className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 ml-1">Display Name</label>
+                            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-12 rounded-xl bg-white dark:bg-slate-900/80 border-gray-200 dark:border-slate-800 focus:border-primary focus:ring-primary/20" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 ml-1">WhatsApp</label>
+                            <Input value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className="h-12 rounded-xl bg-white dark:bg-slate-900/80 border-gray-200 dark:border-slate-800 focus:border-primary focus:ring-primary/20" placeholder="+91..." />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 ml-1">Email (Read Only)</label>
+                        <Input value={user.email} disabled className="h-12 rounded-xl bg-gray-100 dark:bg-slate-900 border-transparent text-gray-500 cursor-not-allowed" />
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100 dark:border-slate-800">
+                        <p className="text-sm font-bold text-gray-900 dark:text-white mb-4">Change Password</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New Password" className="h-12 rounded-xl bg-white dark:bg-slate-900/80 border-gray-200 dark:border-slate-800" />
+                            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" className="h-12 rounded-xl bg-white dark:bg-slate-900/80 border-gray-200 dark:border-slate-800" />
                         </div>
                     </div>
                 </div>
 
-                {/* Details Form */}
-                <div className="bg-gray-50/50 dark:bg-slate-900/50 p-5 md:p-8 rounded-[1.5rem] border border-gray-100 dark:border-slate-800 space-y-5">
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 ml-1">Full Name</label>
-                        <Input value={name} onChange={(e) => setName(e.target.value)} className="h-12 md:h-14 bg-white dark:bg-slate-950 border-gray-200 dark:border-slate-800 rounded-xl md:rounded-2xl px-4 shadow-sm dark:text-white" />
-                    </div>
-                    <div>
-                        <label className="text-xs font-bold text-gray-500 dark:text-slate-500 uppercase">WhatsApp Number</label>
-                        <Input type="tel" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="e.g. 917047163936" className="mt-1 h-12 md:h-14 bg-white dark:bg-slate-950 border-gray-200 dark:border-slate-800 rounded-xl md:rounded-2xl dark:text-white" />
-                        <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Country code ke saath number rakho.</p>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 ml-1">Email Address</label>
-                        <Input value={user.email} disabled className="h-12 md:h-14 bg-gray-100 dark:bg-slate-900 text-gray-500 dark:text-slate-400 border-transparent rounded-xl md:rounded-2xl px-4 cursor-not-allowed font-medium" />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 ml-1">New Password</label>
-                            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-12 md:h-14 bg-white dark:bg-slate-950 border-gray-200 dark:border-slate-800 rounded-xl md:rounded-2xl px-4 dark:text-white" />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-2 ml-1">Confirm Password</label>
-                            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="h-12 md:h-14 bg-white dark:bg-slate-950 border-gray-200 dark:border-slate-800 rounded-xl md:rounded-2xl px-4 dark:text-white" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex flex-col-reverse md:flex-row justify-end gap-4">
-                    <Button type="button" onClick={handleLogout} variant="ghost" className="md:hidden h-12 text-red-500 font-bold">Log Out</Button>
-                    <Button type="submit" disabled={updateLoading} className="h-12 md:h-14 px-10 rounded-xl md:rounded-2xl bg-gray-900 dark:bg-primary hover:bg-primary text-white font-bold text-base md:text-lg shadow-xl shadow-gray-200 dark:shadow-none hover:shadow-purple-200 transition-all w-full md:w-auto">
-                        {updateLoading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : "Save Changes"}
+                {/* 3. Action */}
+                <div className="flex justify-end pt-4">
+                    <Button type="submit" disabled={updateLoading} className="h-12 px-8 rounded-xl bg-primary hover:bg-purple-700 text-white font-bold shadow-lg shadow-primary/25 transition-all">
+                        {updateLoading ? <Loader2 className="animate-spin" /> : <span className="flex items-center gap-2"><Save className="h-4 w-4" /> Save Changes</span>}
                     </Button>
                 </div>
             </form>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from "@/lib/axios";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import SEO from '../components/SEO';
 import ProductInfo from './product/ProductInfo';
 import ProductReviews from './product/ProductReviews';
@@ -36,7 +37,7 @@ const ProductDetails = () => {
         // 3. Fetch All Products (for Related logic)
         const { data: allProds } = await api.get('/products');
 
-        // 4. Filter Related Products
+        // 4. Filter Related Products (Same category, exclude current)
         const related = allProds
           .filter((p) => p.category === currentProduct.category && p._id !== currentProduct._id)
           .slice(0, 4);
@@ -60,50 +61,43 @@ const ProductDetails = () => {
   // --- RENDER HELPERS ---
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-300">
-        <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-        <p className="text-gray-500 dark:text-slate-400 font-medium">Loading Product Details...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-500">
+        <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+        <p className="text-gray-500 dark:text-slate-400 font-bold animate-pulse">Loading Product...</p>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-300">
-        <h2 className="text-2xl font-bold text-red-500 mb-2">Product Not Found</h2>
-        <button
-          onClick={() => navigate('/shop')}
-          className="text-primary hover:underline font-medium"
-        >
-          Return to Shop
-        </button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-500">
+        <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-3xl border border-red-100 dark:border-red-900/20 text-center">
+          <h2 className="text-2xl font-extrabold text-red-600 dark:text-red-400 mb-2">Product Not Found</h2>
+          <p className="text-gray-500 dark:text-slate-400 mb-6">The item you are looking for might have been removed.</p>
+          <Button onClick={() => navigate('/shop')} variant="outline" className="rounded-full">
+            Return to Shop
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // --- SEO & SCHEMA GENERATION START ---
-
-  // 1. Calculate Minimum Price
+  // --- SEO & SCHEMA GENERATION ---
   const minPrice = product?.variants?.length
     ? Math.min(...product.variants.map(v => Number(v.price)))
     : 0;
 
-  // 2. Calculate Date for 'priceValidUntil' (Next Year)
   const nextYear = new Date();
   nextYear.setFullYear(nextYear.getFullYear() + 1);
   const priceValidUntil = nextYear.toISOString().split('T')[0];
 
-  // 3. Construct Full Product Schema (Optimized for Merchant Listing)
   const productSchema = {
     "@context": "https://schema.org/",
     "@type": "Product",
     "name": product.name,
     "image": product.image,
     "description": product.description?.substring(0, 160) || "Premium Quality Human Hair from Beldanga.",
-    "brand": {
-      "@type": "Brand",
-      "name": "TS Hair Enterprise"
-    },
+    "brand": { "@type": "Brand", "name": "TS Hair Enterprise" },
     "sku": product._id,
     "offers": {
       "@type": "Offer",
@@ -113,45 +107,23 @@ const ProductDetails = () => {
       "priceValidUntil": priceValidUntil,
       "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "itemCondition": "https://schema.org/NewCondition",
-
-      // --- ✅ FIXED: Delivery Time Added ---
       "shippingDetails": {
         "@type": "OfferShippingDetails",
-        "shippingRate": {
-          "@type": "MonetaryAmount",
-          "value": 0,
-          "currency": "USD"
-        },
-        "shippingDestination": {
-          "@type": "DefinedRegion",
-          "addressCountry": "US"
-        },
-        // Google needs to know how fast you deliver
+        "shippingRate": { "@type": "MonetaryAmount", "value": 0, "currency": "USD" },
+        "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "US" },
         "deliveryTime": {
           "@type": "ShippingDeliveryTime",
-          "handlingTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 1,
-            "maxValue": 2, // 1-2 Days to Pack
-            "unitCode": "d"
-          },
-          "transitTime": {
-            "@type": "QuantitativeValue",
-            "minValue": 3,
-            "maxValue": 7, // 3-7 Days to Deliver
-            "unitCode": "d"
-          }
+          "handlingTime": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 2, "unitCode": "d" },
+          "transitTime": { "@type": "QuantitativeValue", "minValue": 3, "maxValue": 7, "unitCode": "d" }
         }
       },
-
-      // --- ✅ FIXED: Return Fees Added ---
       "hasMerchantReturnPolicy": {
         "@type": "MerchantReturnPolicy",
         "applicableCountry": "US",
         "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
         "merchantReturnDays": 7,
         "returnMethod": "https://schema.org/ReturnByMail",
-        "returnFees": "https://schema.org/FreeReturn" // Added: Free Returns flag
+        "returnFees": "https://schema.org/FreeReturn"
       }
     },
     "aggregateRating": {
@@ -164,10 +136,9 @@ const ProductDetails = () => {
   const seoTitle = `${product.name} - Best Manufacturer Price in Beldanga, India`;
   const seoDesc = `Buy ${product.name} directly from factory in Beldanga. 100% Raw Indian ${product.category}, single donor, unprocessed. Worldwide shipping available.`;
   const seoKeywords = `${product.name}, ${product.category} exporter India, Best human hair Beldanga, Raw hair supplier Murshidabad, ${product.name} wholesale price`;
-  // --- SEO END ---
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-slate-950 relative overflow-hidden transition-colors duration-500">
 
       {product && (
         <SEO
@@ -181,42 +152,58 @@ const ProductDetails = () => {
         />
       )}
 
-      {/* --- AMBIENT BACKGROUND BLOBS --- */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-60">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-purple-100/50 dark:bg-purple-900/10 rounded-full blur-[120px] -z-10"></div>
-        <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] bg-blue-50/60 dark:bg-blue-900/10 rounded-full blur-[100px] -z-10"></div>
+      {/* --- AMBIENT BACKGROUND BLOBS (Hero Consistent) --- */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-[-10%] w-[600px] h-[600px] bg-primary/5 dark:bg-primary/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-blue-100/40 dark:bg-blue-900/10 rounded-full blur-[100px] animate-pulse-slow delay-1000"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+      {/* ✅ FIX: Increased top padding (pt-32) to clear Floating Navbar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 relative z-10">
 
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="group flex items-center text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary mb-8 transition-all duration-200"
-        >
-          <div className="p-2 rounded-full bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800 group-hover:border-primary/30 mr-3 group-hover:-translate-x-1 transition-transform">
-            <ArrowLeft className="h-4 w-4" />
+        {/* --- NAVIGATION --- */}
+        <div className="mb-8 animate-in slide-in-from-top-4 duration-500">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 gap-2 text-gray-500 dark:text-slate-400 pl-2 pr-4 h-10"
+          >
+            <div className="p-1.5 bg-white dark:bg-slate-900 rounded-full border border-gray-200 dark:border-slate-700 shadow-sm">
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </div>
+            <span className="font-bold text-sm">Back to Collection</span>
+          </Button>
+        </div>
+
+        {/* --- CONTENT STACK --- */}
+        <div className="flex flex-col gap-24">
+
+          {/* 1. Main Product Info */}
+          <ProductInfo
+            product={product}
+            siteSettings={siteSettings}
+            userInfo={userInfo}
+          />
+
+          {/* 2. Reviews Section */}
+          <div className="relative border-t border-gray-100 dark:border-slate-800 pt-16">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-950 px-4 text-gray-300 dark:text-slate-700">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <ProductReviews
+              product={product}
+              userInfo={userInfo}
+            />
           </div>
-          <span className="font-medium">Back</span>
-        </button>
 
-        {/* 1. Main Info Section */}
-        <ProductInfo
-          product={product}
-          siteSettings={siteSettings}
-          userInfo={userInfo}
-        />
+          {/* 3. Related Products */}
+          <div className="border-t border-gray-100 dark:border-slate-800 pt-16">
+            <RelatedProducts
+              products={relatedProducts}
+            />
+          </div>
 
-        {/* 2. Reviews Section */}
-        <ProductReviews
-          product={product}
-          userInfo={userInfo}
-        />
-
-        {/* 3. Related Products Section */}
-        <RelatedProducts
-          products={relatedProducts}
-        />
+        </div>
 
       </div>
     </div>

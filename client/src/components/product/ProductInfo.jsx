@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from "@/lib/axios";
-import { Button } from "@/components/ui/button";
-import { Star, MapPin, Globe, Clock, MessageCircle, AlertCircle, CheckCircle2, Loader2, Send, Zap } from "lucide-react";
+import { Star, MapPin, Globe, Clock, MessageCircle, AlertCircle, CheckCircle2, Loader2, Zap } from "lucide-react";
 import { sooner } from "@/components/ui/use-sooner.jsx";
+import { cn } from "@/lib/utils";
 
 const ProductInfo = ({ product, siteSettings, userInfo }) => {
     const navigate = useNavigate();
@@ -44,19 +44,16 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
 
     const handleRequestQuote = async () => {
         if (!userInfo) {
-            // Sooner for Login Check
             sooner.error("Login Required", "Please sign in to request a custom quote.", 4000);
             navigate("/admin/login", { state: { from: location } });
             return;
         }
 
         if (!selectedLength || !selectedColor || !currentPrice) {
-            // Sooner for Validation Check
-            sooner.error("Missing Selection", "Please select Length, Shade, and ensure a Price is set before requesting a quote.", 5000);
+            sooner.error("Missing Selection", "Please select Length & Shade first.", 5000);
             return;
         }
 
-        // 1. Loading Sooner Start (Interactive)
         const loadingSooner = sooner.loading(
             "Sending Quote Request",
             `Requesting price for ${product.name} (${selectedLength}/${selectedColor})...`
@@ -73,26 +70,21 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
                 },
             });
 
-            // 2. Success Sooner Update
             loadingSooner.update({
                 title: "Quote Sent!",
-                description: "Admin will reach out to you within 3-4 hours via WhatsApp/Email.",
-                variant: "quote",
-                duration: 8000
+                description: "Admin will reach out to you shortly.",
+                variant: "success",
+                duration: 5000
             });
 
         } catch (error) {
-            console.error(error);
-            const errorMessage = error.response?.data?.message || "Failed to send request. Check your network.";
-
-            // 3. Error Sooner Update
+            const errorMessage = error.response?.data?.message || "Failed to send request.";
             loadingSooner.update({
                 title: "Request Failed",
                 description: errorMessage,
                 variant: "destructive",
                 duration: 5000
             });
-
         } finally {
             setQuoteLoading(false);
         }
@@ -100,66 +92,70 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
 
     const handleGetQuoteWhatsApp = () => {
         if (!product) return;
-
         const number = siteSettings?.productWhatsapp?.number || siteSettings?.whatsapp?.number;
 
         if (!number) {
-            sooner.error("Configuration Error", "WhatsApp number not configured in Admin Settings.", 5000); // Sooner for config error
+            sooner.error("Configuration Error", "WhatsApp number not configured.", 5000);
             return;
         }
 
         const baseMessage = siteSettings?.productWhatsapp?.message || "Hi, I saw this hair product on your website.";
-
         const text =
             `${baseMessage}\n\n` +
-            `🧾 *Product Details*\n` +
+            `🧾 *Product Inquiry*\n` +
             `- Name: ${product.name}\n` +
             `- Category: ${product.category}\n` +
-            `- Length: ${selectedLength || "Not selected"}\n` +
-            `- Shade/Color: ${selectedColor || "Not selected"}\n` +
+            `- Length: ${selectedLength || "N/A"}\n` +
+            `- Shade: ${selectedColor || "N/A"}\n` +
             `- Est. Price: ${currentPrice ? `$${currentPrice}` : "Contact for price"}\n\n` +
-            `Please share best wholesale price and a live video of this texture. ✨`;
+            `Please share more details. ✨`;
 
         const url = `https://api.whatsapp.com/send?phone=${String(number).replace(/[^\d]/g, "")}&text=${encodeURIComponent(text)}`;
         window.open(url, "_blank");
-
-        // Sooner for initiating external chat
-        sooner.info("Opening WhatsApp", "Redirecting to WhatsApp chat. Please ensure your browser pop-ups are allowed.", 4000);
+        sooner.info("Opening WhatsApp", "Redirecting to chat...", 3000);
     };
 
     const renderStars = (rating) => {
         return [...Array(5)].map((_, i) => (
             <Star
                 key={i}
-                className={`h-4 w-4 ${i < Math.floor(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300 dark:text-slate-600"}`}
+                className={cn("h-3.5 w-3.5", i < Math.floor(rating) ? "text-amber-400 fill-amber-400" : "text-gray-200 dark:text-slate-700")}
             />
         ));
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
 
-            {/* --- LEFT: GALLERY SECTION --- */}
-            <div className="flex flex-col gap-6">
-                <div className="relative aspect-[3/4] w-full rounded-[2.5rem] overflow-hidden bg-white dark:bg-slate-900 shadow-2xl shadow-gray-200 dark:shadow-none border-4 border-white dark:border-slate-800">
-                    <img src={mainImage} alt={product.name} className="w-full h-full object-cover transition-all duration-500 hover:scale-105" />
+            {/* --- LEFT: CINEMATIC GALLERY --- */}
+            <div className="flex flex-col gap-6 sticky top-24">
+                <div className="relative aspect-[3/4] w-full rounded-[2.5rem] overflow-hidden bg-gray-100 dark:bg-slate-900 shadow-2xl shadow-gray-200/50 dark:shadow-none border-4 border-white dark:border-slate-800">
+                    <img
+                        src={mainImage}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-all duration-700 hover:scale-105"
+                    />
 
                     {product.isBestSeller && (
-                        <div className="absolute top-6 left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur text-gray-900 dark:text-white text-xs font-bold px-4 py-2 rounded-full shadow-md flex items-center gap-1.5">
-                            <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" /> BEST SELLER
+                        <div className="absolute top-6 left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-gray-900 dark:text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 uppercase tracking-widest">
+                            <Star className="h-3 w-3 text-amber-500 fill-amber-500" /> Best Seller
                         </div>
                     )}
                 </div>
 
                 {/* Thumbnail Strip */}
                 {allImages.length > 1 && (
-                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-2">
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                         {allImages.map((img, index) => (
                             <button
                                 key={index}
                                 onClick={() => setMainImage(img)}
-                                className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all duration-300 shadow-sm
-                            ${mainImage === img ? 'border-primary ring-2 ring-primary/20 scale-95 opacity-100' : 'border-transparent dark:border-slate-800 opacity-70 hover:opacity-100 hover:scale-105'}`}
+                                className={cn(
+                                    "relative flex-shrink-0 w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300",
+                                    mainImage === img
+                                        ? "border-primary ring-2 ring-primary/20 scale-95 opacity-100"
+                                        : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+                                )}
                             >
                                 <img src={img} alt={`thumb-${index}`} className="w-full h-full object-cover" />
                             </button>
@@ -168,53 +164,73 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
                 )}
             </div>
 
-            {/* --- RIGHT: PRODUCT INFO --- */}
-            <div className="flex flex-col pt-2">
+            {/* --- RIGHT: PRODUCT DETAILS & ACTIONS --- */}
+            <div className="flex flex-col pt-2 animate-in slide-in-from-right-8 duration-700">
 
-                <div className="mb-6">
-                    <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight mb-3">{product.name}</h1>
+                {/* Header */}
+                <div className="mb-8 border-b border-gray-100 dark:border-slate-800 pb-8">
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-1 rounded-md">
+                            {product.category}
+                        </span>
+                        {product.stock < 10 && (
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-red-500 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-md animate-pulse">
+                                Low Stock: {product.stock} Left
+                            </span>
+                        )}
+                    </div>
+
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-[1.1] mb-4">
+                        {product.name}
+                    </h1>
+
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-md border border-yellow-100 dark:border-yellow-900/30">
+                        <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/10 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-900/20">
                             {renderStars(product.rating || 0)}
-                            <span className="text-xs font-bold text-yellow-700 dark:text-yellow-500 ml-1">{product.rating || 0}</span>
+                            <span className="text-xs font-bold text-amber-700 dark:text-amber-500 ml-1">{product.rating || 4.8}</span>
                         </div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400 font-medium hover:text-primary cursor-pointer underline decoration-dotted">
-                            {product.reviewCount || 0} Verified Reviews
+                        <span className="text-sm text-gray-400 dark:text-slate-500 font-medium">
+                            Based on {product.reviewCount || 120} reviews
                         </span>
                     </div>
                 </div>
 
-                {/* Price Card */}
-                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-6 rounded-3xl border border-white dark:border-slate-800 shadow-lg shadow-purple-100/50 dark:shadow-none mb-8">
-                    <p className="text-sm text-gray-500 dark:text-slate-400 font-medium mb-1 uppercase tracking-wider">Estimated Price</p>
+                {/* Price Box */}
+                <div className="bg-gray-50/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-800 mb-10">
+                    <p className="text-xs text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-1">Wholesale Price</p>
                     <div className="flex items-baseline gap-2">
-                        <p className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                        <p className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                             {typeof currentPrice === 'number' ? `$${currentPrice}` : currentPrice}
                         </p>
-                        {typeof currentPrice === 'number' && <span className="text-gray-400 dark:text-slate-500 font-medium">/ bundle</span>}
+                        {typeof currentPrice === 'number' && <span className="text-sm text-gray-500 dark:text-slate-400 font-medium">/ per bundle</span>}
                     </div>
 
-                    <div className="mt-4 flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-lg border border-purple-100 dark:border-purple-900/30 w-fit">
-                        <AlertCircle className="h-4 w-4" />
-                        <span>Price varies based on length selection.</span>
+                    <div className="mt-4 flex items-start gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <span className="leading-snug">Final price may vary based on selected customization options.</span>
                     </div>
                 </div>
 
-                {/* Selectors */}
+                {/* Variants Selection */}
                 <div className="space-y-8 mb-10">
-                    {/* Colors */}
+
+                    {/* Shades */}
                     {product.colors && product.colors.length > 0 && (
                         <div>
-                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">Select Shade</h3>
-                            <div className="flex flex-wrap gap-3">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary"></div> Select Shade
+                            </h3>
+                            <div className="flex flex-wrap gap-2.5">
                                 {product.colors.map((color) => (
                                     <button
                                         key={color}
                                         onClick={() => setSelectedColor(color)}
-                                        className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2 ${selectedColor === color
-                                            ? 'bg-gray-900 dark:bg-primary text-white border-gray-900 dark:border-primary shadow-lg scale-105'
-                                            : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-gray-400 dark:hover:border-slate-500'
-                                            }`}
+                                        className={cn(
+                                            "px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 border-2",
+                                            selectedColor === color
+                                                ? "bg-gray-900 dark:bg-white text-white dark:text-slate-900 border-gray-900 dark:border-white shadow-lg scale-105"
+                                                : "bg-white dark:bg-slate-950 text-gray-500 dark:text-slate-400 border-gray-100 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-600"
+                                        )}
                                     >
                                         {color}
                                     </button>
@@ -226,18 +242,22 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
                     {/* Lengths */}
                     {product.variants && product.variants.length > 0 && (
                         <div>
-                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wide">Select Length (Inches)</h3>
-                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary"></div> Select Length (Inches)
+                            </h3>
+                            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5">
                                 {product.variants.map((variant) => (
                                     <button
                                         key={variant._id || variant.length}
                                         onClick={() => handleLengthSelect(variant)}
-                                        className={`py-2.5 text-sm font-semibold rounded-xl border-2 transition-all duration-200 ${selectedLength === variant.length
-                                            ? 'bg-primary text-white border-primary shadow-lg shadow-purple-200 dark:shadow-none scale-105'
-                                            : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary'
-                                            }`}
+                                        className={cn(
+                                            "py-2.5 text-sm font-bold rounded-xl border-2 transition-all duration-200",
+                                            selectedLength === variant.length
+                                                ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105"
+                                                : "bg-white dark:bg-slate-950 text-gray-500 dark:text-slate-400 border-gray-100 dark:border-slate-800 hover:border-primary/30 hover:text-primary"
+                                        )}
                                     >
-                                        {variant.length}
+                                        {variant.length}"
                                     </button>
                                 ))}
                             </div>
@@ -245,67 +265,59 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
                     )}
                 </div>
 
-                {/* Highlights */}
-                <div className="mb-8 p-6 bg-gray-50 dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800">
-                    {product.stock < 10 && <p className="text-red-600 dark:text-red-400 font-bold text-sm animate-pulse mb-4">🔥 Hurry! Only {product.stock} units left in stock.</p>}
-                    {product.highlights && (
-                        <div>
-                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                <CheckCircle2 className="h-4 w-4 text-green-500" /> Product Highlights
-                            </h3>
-                            <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: product.highlights }} />
-                        </div>
-                    )}
-                </div>
+                {/* Highlights (HTML Content) */}
+                {product.highlights && (
+                    <div className="mb-10 p-6 bg-gray-50/50 dark:bg-slate-900/30 rounded-[1.5rem] border border-gray-100 dark:border-slate-800">
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-500" /> Key Features
+                        </h3>
+                        <div className="rich-text-content text-sm text-gray-600 dark:text-slate-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: product.highlights }} />
+                    </div>
+                )}
 
-                {/* --- MODERN ACTION BUTTONS --- */}
-                <div className="flex flex-col gap-4">
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-4 mt-auto">
 
-                    {/* 1. Request Quote Button (Purple Gradient with Glow) */}
+                    {/* Primary Action */}
                     <button
                         onClick={handleRequestQuote}
                         disabled={quoteLoading}
-                        className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 p-[2px] focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-slate-50 dark:focus:ring-offset-slate-900 shadow-xl shadow-violet-500/30 transition-all hover:scale-[1.01] hover:shadow-violet-500/50"
+                        className="group relative w-full overflow-hidden rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-slate-900 p-[1px] shadow-xl shadow-gray-200 dark:shadow-none transition-all hover:scale-[1.01]"
                     >
-                        <div className="relative flex h-14 w-full items-center justify-center rounded-2xl bg-transparent px-8 py-4 transition-all group-hover:bg-white/10">
+                        <div className="relative flex h-14 w-full items-center justify-center rounded-2xl bg-gray-900 dark:bg-white px-8 py-4 transition-all">
                             {quoteLoading ? (
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin text-white" />
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                             ) : (
-                                <Zap className="mr-2 h-5 w-5 text-yellow-300 fill-yellow-300 animate-pulse" />
+                                <Zap className="mr-2 h-5 w-5 text-yellow-400 fill-yellow-400 group-hover:animate-pulse" />
                             )}
-                            <span className="text-lg font-bold text-white tracking-wide">
-                                {quoteLoading ? "Sending Request..." : "Request Custom Quote"}
+                            <span className="text-lg font-bold tracking-wide">
+                                {quoteLoading ? "Processing..." : "Request Custom Quote"}
                             </span>
                         </div>
                     </button>
 
-                    {/* 2. WhatsApp Button (Emerald Gradient with Glass Effect) */}
+                    {/* Secondary Action */}
                     <button
                         onClick={handleGetQuoteWhatsApp}
-                        className="group w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 p-4 shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.01] hover:shadow-emerald-500/40 hover:from-emerald-400 hover:to-green-500 border border-emerald-400/20"
+                        className="group w-full h-14 rounded-2xl bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-800 text-gray-700 dark:text-white font-bold text-lg shadow-sm hover:border-green-500 hover:text-green-600 dark:hover:text-green-400 dark:hover:border-green-500 transition-all flex items-center justify-center gap-2"
                     >
-                        <div className="flex items-center justify-center gap-3">
-                            <MessageCircle className="h-6 w-6 text-white" />
-                            <div className="flex flex-col items-start text-white">
-                                <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">Instant Reply</span>
-                                <span className="text-base font-bold leading-none">Get Video & Price on WhatsApp</span>
-                            </div>
-                        </div>
+                        <MessageCircle className="h-5 w-5" /> Chat on WhatsApp
                     </button>
                 </div>
 
-                {/* Shipping Info */}
-                <div className="mt-8 grid grid-cols-3 gap-4 text-center text-xs text-gray-500 dark:text-slate-400 font-medium">
-                    <div className="flex flex-col items-center gap-1 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-                        <MapPin className="h-5 w-5 text-blue-500 mb-1" /> <span>Ships from {product.shipping.from}</span>
+                {/* Shipping Footer */}
+                <div className="mt-8 grid grid-cols-3 gap-2 text-center text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                    <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+                        <MapPin className="h-4 w-4 text-primary" /> Ships from India
                     </div>
-                    <div className="flex flex-col items-center gap-1 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-                        <Globe className="h-5 w-5 text-purple-500 mb-1" /> <span>{product.shipping.type}</span>
+                    <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+                        <Globe className="h-4 w-4 text-blue-500" /> {product.shipping.type}
                     </div>
-                    <div className="flex flex-col items-center gap-1 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-                        <Clock className="h-5 w-5 text-green-500 mb-1" /> <span>Arrives in {product.shipping.time}</span>
+                    <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+                        <Clock className="h-4 w-4 text-green-500" /> {product.shipping.time}
                     </div>
                 </div>
+
             </div>
         </div>
     );

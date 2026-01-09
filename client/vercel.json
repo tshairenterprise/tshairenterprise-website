@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "https://jony-hair-server.onrender.com/sitemap.xml"
+      "destination": "https://ts-hair-server.onrender.com/sitemap.xml"
     },
     {
       "source": "/(.*)",
