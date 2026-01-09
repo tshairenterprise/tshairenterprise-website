@@ -94,7 +94,7 @@ const Hero = () => {
                         </div>
 
                         {/* Floating Card 1: Verified Quality */}
-                        <div className="absolute top-10 -left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/50 dark:border-slate-700 flex items-center gap-3 animate-bounce-slow z-20">
+                        <div className="absolute md:bottom-96 md:-left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/50 dark:border-slate-700 flex items-center gap-3 animate-bounce-slow z-20 bottom-10 -left-3">
                             <div className="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
                                 <ShieldCheck className="h-6 w-6" />
                             </div>
@@ -105,7 +105,7 @@ const Hero = () => {
                         </div>
 
                         {/* Floating Card 2: Global Reach */}
-                        <div className="absolute bottom-10 -right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/50 dark:border-slate-700 flex items-center gap-3 animate-bounce-slow delay-700 z-20">
+                        <div className="absolute bottom-10 md:-right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/50 dark:border-slate-700 flex items-center gap-3 animate-bounce-slow delay-700 z-20 -right-3">
                             <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
                                 <Globe className="h-6 w-6" />
                             </div>

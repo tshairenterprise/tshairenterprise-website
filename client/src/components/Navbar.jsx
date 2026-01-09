@@ -102,7 +102,7 @@ const Navbar = () => {
                                 <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <img src="/logo.webp" alt="TS Hair Logo" className="h-8 md:h-10 w-auto relative z-10 transition-transform group-hover:scale-105 rounded-full" />
                             </div>
-                            <div className="flex align-bottom gap-2">
+                            <div className="">
                                 <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white leading-none">TS Hair</span>
                                 <span className="text-[10px] font-medium text-primary block tracking-widest uppercase">Enterprise</span>
                             </div>
@@ -111,9 +111,10 @@ const Navbar = () => {
                         {/* 2. DESKTOP NAV LINKS (Uses extracted component) */}
                         <div className="hidden md:flex items-center gap-8 bg-gray-50/50 dark:bg-slate-800/50 px-8 py-2.5 rounded-full border border-gray-100 dark:border-slate-700/50">
                             <NavLink to="/">Home</NavLink>
-                            <NavLink to="/shop">Shop</NavLink>
+                            <NavLink to="/shop">Products</NavLink>
                             <NavLink to="/gallery">Gallery</NavLink>
-                            <NavLink to="/blogs">Blog</NavLink>
+                            <NavLink to="/blogs">Blogs</NavLink>
+                            <NavLink to="/review-us">Review Us</NavLink>
                             <NavLink to="/contact">Contact</NavLink>
                         </div>
 
@@ -219,9 +220,10 @@ const Navbar = () => {
                                             <div className="flex-1 p-6 space-y-2 overflow-y-auto">
                                                 {[
                                                     { name: 'Home', path: '/' },
-                                                    { name: 'Shop Collection', path: '/shop' },
+                                                    { name: 'Our Products', path: '/shop' },
                                                     { name: 'Our Gallery', path: '/gallery' },
                                                     { name: 'Latest Blogs', path: '/blogs' },
+                                                    { name: 'Review Us', path: '/review-us' },
                                                     { name: 'Contact Us', path: '/contact' },
                                                     { name: 'Search', path: '/search' }
                                                 ].map((item) => (

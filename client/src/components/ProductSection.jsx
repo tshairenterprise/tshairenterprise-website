@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import api from "@/lib/axios";
 import { cn } from "@/lib/utils";
 
-// ✅ FIX: Component ko bahar define kiya (Outside main component)
+// Component ko bahar define kiya (Outside main component)
 const CategoryTab = ({ name, isActive, onClick }) => (
     <button
         onClick={onClick}
@@ -98,7 +98,7 @@ const ProductSection = () => {
 
                 {/* --- MODERN STICKY CATEGORY TABS --- */}
                 <div className="sticky top-20 z-30 -mx-4 px-4 sm:mx-0 sm:px-0 mb-8 pointer-events-none">
-                    <div className="pointer-events-auto overflow-x-auto pb-6 pt-2 scrollbar-hide mask-image-linear-gradient">
+                    <div className="pointer-events-auto overflow-x-auto pb-4 pt-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] mask-image-linear-gradient">
                         <div className="flex gap-3 px-1">
                             {/* Render CategoryTab properly */}
                             <CategoryTab

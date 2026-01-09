@@ -17,6 +17,7 @@ import Shop from './pages/Shop';
 import SearchPage from './pages/SearchPage';
 import SEO from './components/SEO';
 import Gallery from './pages/Gallery';
+import ScrollToTop from './components/ScrollToTop';
 
 // Blog Imports
 import BlogSection from './components/BlogSection';
@@ -45,12 +46,8 @@ import GalleryPreview from './components/GalleryPreview';
 const PublicLayout = () => {
   return (
     <>
+      <ScrollToTop />
       <Navbar />
-      {/* ✅ FIX: Removed 'pt-20'. 
-         Ab Hero section ka background directly top (0px) se start hoga 
-         aur Navbar ke piche beautifully blend karega.
-         Components (Hero, Shop etc.) apni spacing khud handle karenge.
-      */}
       <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
         <Outlet />
       </main>
