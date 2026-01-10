@@ -3,13 +3,24 @@ import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin, Send, MessageSquare, Sparkles, ArrowRight, Loader2, MessageCircle } from "lucide-react";
+import {
+    Mail, Phone, MapPin, Send, MessageSquare, Sparkles,
+    ArrowRight, Loader2, MessageCircle, ZoomIn, X, Smartphone
+} from "lucide-react"; // ZoomIn, X, Smartphone icons add kiye
 import { sooner } from "@/components/ui/use-sooner.jsx";
 import SEO from '../components/SEO';
+
+// --- IMAGES IMPORT (Apne assets folder mein ye images daal lena) ---
+// Agar images nahi hain to filhal ye placeholders use honge
+import wechatQrImg from '@/assets/wechat-qr.webp'; // Is file ka naam check karlena
+import zaloQrImg from '@/assets/zalo-qr.webp';     // Is file ka naam check karlena
 
 const Contact = () => {
     const [loading, setLoading] = useState(false);
     const [settings, setSettings] = useState(null);
+
+    // --- ZOOM STATE ---
+    const [zoomedImage, setZoomedImage] = useState(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -46,7 +57,6 @@ const Contact = () => {
 
         const { name, lastName, email, whatsappNumber, subject, message } = formData;
 
-        // Final payload structure
         const payload = {
             name: `${name} ${lastName}`,
             email,
@@ -56,13 +66,11 @@ const Contact = () => {
             userId: userInfo?._id || null
         };
 
-        // Basic client-side validation
         if (!name || !email || !whatsappNumber || !message) {
             sooner.error("Missing Fields", "Please ensure Name, Email, WhatsApp, and Message are filled.", 5000);
             return;
         }
 
-        // 1. Loading Sooner Start
         const loadingSooner = sooner.loading(
             "Sending Message",
             "Your inquiry is being sent to our export team..."
@@ -71,10 +79,8 @@ const Contact = () => {
         setLoading(true);
 
         try {
-            // Submit to new backend route
             await api.post('/messages', payload);
 
-            // 2. Success Sooner Update
             loadingSooner.update({
                 title: "Message Sent!",
                 description: "We have received your message. We will contact you shortly.",
@@ -86,17 +92,13 @@ const Contact = () => {
             setFormData({ name: '', lastName: '', email: '', whatsappNumber: '', subject: '', message: '' });
 
         } catch (error) {
-
             const errorMessage = error.response?.data?.message || "Error submitting form. Check network or server connection.";
-
-            // 3. Error Sooner Update
             loadingSooner.update({
                 title: "Submission Failed",
                 description: errorMessage,
                 variant: "destructive",
                 duration: 5000
             });
-
             setLoading(false);
         }
     };
@@ -106,17 +108,14 @@ const Contact = () => {
             sooner.error("Contact Error", "WhatsApp number is not configured by the admin.", 5000);
             return;
         }
-
         const { number, message } = settings.whatsapp;
         const url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
-
-        // Info Sooner for External Chat
         sooner.info("Opening WhatsApp", "Redirecting to WhatsApp chat. Keep the pre-filled message.", 4000);
     };
 
-    // Helper for Contact Cards
-    const ContactCard = ({ icon: Icon, title, value, href, colorClass, bgClass, borderColor }) => (
+    // Helper for Standard Contact Cards
+    const ContactCard = ({ icon: Icon, title, value, href, colorClass, bgClass }) => (
         <a
             href={href}
             className={`group relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block`}
@@ -137,17 +136,73 @@ const Contact = () => {
         </a>
     );
 
+    // --- NEW HELPER: SCANNER CARD FOR WECHAT/ZALO ---
+    const ScannerCard = ({ title, id, image, colorClass }) => (
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 flex items-center gap-5">
+            {/* Left: Scanner Image (Tap to Zoom) */}
+            <div
+                className="relative w-20 h-20 shrink-0 bg-gray-100 dark:bg-slate-800 rounded-xl overflow-hidden cursor-zoom-in group border border-gray-200 dark:border-slate-700"
+                onClick={() => setZoomedImage(image)}
+            >
+                {image ? (
+                    <img src={image} alt={`${title} QR`} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No IMG</div>
+                )}
+
+                {/* Overlay Icon */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ZoomIn className="text-white h-6 w-6" />
+                </div>
+            </div>
+
+            {/* Right: Text Info */}
+            <div>
+                <div className="flex items-center gap-2 mb-1">
+                    <Smartphone className="h-3.5 w-3.5 text-gray-400" />
+                    <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Add on {title}</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{id || "N/A"}</h3>
+                <p className={`text-xs font-medium ${colorClass} cursor-pointer hover:underline`} onClick={() => setZoomedImage(image)}>
+                    Tap QR to Zoom
+                </p>
+            </div>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-gray-50/50 dark:bg-slate-950 relative overflow-hidden pt-24 pb-20 transition-colors duration-500">
 
             <SEO
                 title="Contact Us | TS Hair Enterprise - Beldanga, Murshidabad"
-                description="Visit our factory at Begun bari, Beldanga (742133). Contact MD Sabir Ahamed for bulk hair export inquiries via WhatsApp or Email. Worldwide shipping available."
-                keywords="TS Hair address Beldanga, contact hair exporter Murshidabad, MD Sabir Ahamed phone number, Begun bari Beldanga hair factory, 742133 hair supplier"
+                description="Visit our factory at Begun bari, Beldanga. Contact MD Sabir Ahamed for bulk hair export via WhatsApp, WeChat, or Zalo."
+                keywords="TS Hair address Beldanga, contact hair exporter Murshidabad"
                 url={window.location.href}
             />
 
-            {/* --- ANIMATED BACKGROUND BLOBS --- */}
+            {/* --- ZOOM MODAL (OVERLAY) --- */}
+            {zoomedImage && (
+                <div
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+                    onClick={() => setZoomedImage(null)}
+                >
+                    <button
+                        className="absolute top-6 right-6 p-2 bg-white/10 rounded-full hover:bg-white/20 text-white transition-colors"
+                        onClick={() => setZoomedImage(null)}
+                    >
+                        <X className="h-8 w-8" />
+                    </button>
+                    <img
+                        src={zoomedImage}
+                        alt="Zoomed QR"
+                        className="max-w-full max-h-[80vh] rounded-3xl shadow-2xl border-4 border-white/10 animate-in zoom-in-50 duration-300 scale-100"
+                        onClick={(e) => e.stopPropagation()} // Prevent close on image click
+                    />
+                    <p className="absolute bottom-10 text-white/70 text-sm font-medium">Tap anywhere to close</p>
+                </div>
+            )}
+
+            {/* --- BACKGROUND BLOBS --- */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] right-[-5%] w-[700px] h-[700px] bg-purple-200/40 dark:bg-purple-900/10 rounded-full blur-[120px] -z-10 mix-blend-multiply dark:mix-blend-normal animate-pulse-slow"></div>
                 <div className="absolute bottom-[10%] left-[-10%] w-[600px] h-[600px] bg-blue-200/40 dark:bg-blue-900/10 rounded-full blur-[100px] -z-10 mix-blend-multiply dark:mix-blend-normal animate-pulse-slow delay-1000"></div>
@@ -205,7 +260,7 @@ const Contact = () => {
                             bgClass="bg-orange-50 dark:bg-orange-900/20 group-hover:bg-orange-100"
                         />
 
-                        {/* Special WhatsApp Card */}
+                        {/* WhatsApp Card */}
                         <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-500 to-green-600 p-8 text-white shadow-xl shadow-emerald-500/20 group hover:shadow-2xl transition-all duration-300">
                             <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
 
@@ -226,6 +281,25 @@ const Contact = () => {
                                     Start Chat Now <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </div>
+                        </div>
+
+                        {/* --- NEW SECTIONS: WECHAT & ZALO --- */}
+                        <div className="grid grid-cols-1 gap-4">
+                            {/* WeChat Scanner */}
+                            <ScannerCard
+                                title="WeChat"
+                                id={settings?.socials?.wechat || "+91 70471 63936"}
+                                image={wechatQrImg}
+                                colorClass="text-green-600 dark:text-green-400"
+                            />
+
+                            {/* Zalo Scanner */}
+                            <ScannerCard
+                                title="Zalo"
+                                id={settings?.socials?.zalo || "+91 70471 63936"}
+                                image={zaloQrImg}
+                                colorClass="text-blue-500 dark:text-blue-400"
+                            />
                         </div>
 
                     </div>
@@ -276,7 +350,7 @@ const Contact = () => {
                                             className="h-14 rounded-2xl bg-gray-50/50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary/20 transition-all dark:text-white" required />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-700 dark:text-slate-300 ml-1">WhatsApp Number (with code)</label>
+                                        <label className="text-sm font-bold text-gray-700 dark:text-slate-300 ml-1">WhatsApp Number</label>
                                         <Input
                                             name="whatsappNumber"
                                             value={formData.whatsappNumber}
@@ -284,7 +358,6 @@ const Contact = () => {
                                             type="tel"
                                             placeholder="e.g. 917047163936"
                                             className="h-14 rounded-2xl bg-gray-50/50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary/20 transition-all dark:text-white" required />
-                                        <p className="text-[10px] text-gray-400 dark:text-slate-500 pl-1">Include country code, no spaces.</p>
                                     </div>
                                 </div>
 
@@ -325,9 +398,7 @@ const Contact = () => {
 
                 {/* --- MAP SECTION --- */}
                 <div className="mt-24 relative group">
-                    {/* Glowing border behind map */}
                     <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-[2.5rem] blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
-
                     <div className="w-full h-[450px] bg-gray-200 dark:bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl relative z-10 border-4 border-white dark:border-slate-800">
                         <iframe
                             src={settings?.mapUrl || "about:blank"}
@@ -338,8 +409,6 @@ const Contact = () => {
                             loading="lazy"
                             className="grayscale hover:grayscale-0 transition-all duration-700 opacity-90 hover:opacity-100"
                         ></iframe>
-
-                        {/* Overlay Badge */}
                         <div className="absolute bottom-6 left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-6 py-3 rounded-2xl shadow-lg border border-white/20 dark:border-slate-700 pointer-events-none">
                             <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest">Headquarters</p>
                             <p className="text-sm font-bold text-gray-900 dark:text-white">Murshidabad, West Bengal</p>
