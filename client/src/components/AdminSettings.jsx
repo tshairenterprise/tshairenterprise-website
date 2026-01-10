@@ -231,7 +231,7 @@ const AdminSettings = () => {
                                 </div>
                                 <Input
                                     placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
-                                    value={formData.socials[platform]}
+                                    value={formData.socials[platform] || ""}
                                     onChange={(e) => handleChange('socials', platform, e.target.value)}
                                     className="h-12 bg-gray-50 dark:bg-slate-950 border-gray-200 dark:border-slate-800 rounded-xl dark:text-white focus:bg-white dark:focus:bg-slate-900"
                                 />

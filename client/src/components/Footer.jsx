@@ -27,7 +27,7 @@ const Footer = () => {
         const fetchSettings = async () => {
             try {
                 const { data } = await api.get('/settings');
-                setSettings(data);
+                setSettings(Array.isArray(data) ? data[0] : data);
             } catch (error) {
                 console.error("Error fetching settings");
             }
@@ -93,7 +93,7 @@ const Footer = () => {
                                 { icon: MessageCircle, link: settings?.socials?.wechat, color: "hover:bg-emerald-600 hover:border-emerald-600" },
                                 { icon: MessageSquare, link: settings?.socials?.zalo, color: "hover:bg-indigo-600 hover:border-indigo-600" },
                             ].map((social, idx) => (
-                                social.link && social.link !== "#" && (
+                                social.link && social.link.trim() !== "#" && (
                                     <a
                                         key={idx}
                                         href={getLink(social.link)}
