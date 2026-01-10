@@ -5,9 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Save, Globe, Phone, MessageCircle, MapPin,
-    Facebook, Instagram, Twitter, Mail, Settings,
-    Loader2, Send, MessageSquare
+    Save,
+    Globe,
+    Phone,
+    MessageCircle,
+    MapPin,
+    Facebook,
+    Instagram,
+    Twitter,
+    Youtube,
+    Mail,
+    Settings,
+    Loader2,
+    Send,
+    MessageSquare
 } from "lucide-react";
 import { sooner } from "@/components/ui/use-sooner.jsx";
 
@@ -35,7 +46,15 @@ const AdminSettings = () => {
         email: '',
         phone: '',
         address: '',
-        socials: { facebook: '', instagram: '', twitter: '' },
+        socials: {
+            facebook: '',
+            instagram: '',
+            twitter: '',
+            youtube: '',
+            telegram: '',
+            wechat: '',
+            zalo: ''
+        },
         whatsapp: { number: '', message: '' },
         productWhatsapp: { number: '', message: '' },
         telegram: { enabled: false, botToken: "", chatId: "" },
@@ -184,10 +203,31 @@ const AdminSettings = () => {
                     blobColor="bg-pink-500"
                 >
                     <div className="grid grid-cols-1 gap-5">
-                        {['facebook', 'instagram', 'twitter'].map((platform) => (
+                        {['facebook', 'instagram', 'twitter', 'youtube', 'telegram', 'wechat', 'zalo'].map((platform) => (
                             <div key={platform} className="flex items-center gap-4 group/item">
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover/item:scale-110 ${platform === 'facebook' ? 'bg-blue-100 text-blue-600' : platform === 'instagram' ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white' : 'bg-sky-100 text-sky-500'}`}>
-                                    {platform === 'facebook' ? <Facebook className="h-5 w-5" /> : platform === 'instagram' ? <Instagram className="h-5 w-5" /> : <Twitter className="h-5 w-5" />}
+                                <div
+                                    className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover/item:scale-110 ${platform === 'facebook'
+                                            ? 'bg-blue-100 text-blue-600'
+                                            : platform === 'instagram'
+                                                ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white'
+                                                : platform === 'twitter'
+                                                    ? 'bg-sky-100 text-sky-500'
+                                                    : platform === 'youtube'
+                                                        ? 'bg-red-100 text-red-600'
+                                                        : platform === 'telegram'
+                                                            ? 'bg-sky-100 text-sky-600'
+                                                            : platform === 'wechat'
+                                                                ? 'bg-emerald-100 text-emerald-600'
+                                                                : 'bg-indigo-100 text-indigo-600'
+                                        }`}
+                                >
+                                    {platform === 'facebook' && <Facebook className="h-5 w-5" />}
+                                    {platform === 'instagram' && <Instagram className="h-5 w-5" />}
+                                    {platform === 'twitter' && <Twitter className="h-5 w-5" />}
+                                    {platform === 'youtube' && <Youtube className="h-5 w-5" />}
+                                    {platform === 'telegram' && <Send className="h-5 w-5" />}
+                                    {platform === 'wechat' && <MessageCircle className="h-5 w-5" />}
+                                    {platform === 'zalo' && <MessageSquare className="h-5 w-5" />}
                                 </div>
                                 <Input
                                     placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}

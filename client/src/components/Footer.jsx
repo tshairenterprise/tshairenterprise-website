@@ -2,8 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from "@/lib/axios";
 import {
-    Facebook, Instagram, Twitter, Mail, Phone, MapPin,
-    ExternalLink, ArrowRight, Heart, ShieldCheck
+    Facebook,
+    Instagram,
+    Twitter,
+    Youtube,
+    Send,
+    MessageCircle,
+    MessageSquare,
+    Mail,
+    Phone,
+    MapPin,
+    ExternalLink,
+    ArrowRight,
+    Heart,
+    ShieldCheck
 } from "lucide-react";
 
 const Footer = () => {
@@ -70,13 +82,18 @@ const Footer = () => {
                         </div>
 
                         {/* Social Icons */}
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-3 pt-2 flex-wrap">
                             {[
                                 { icon: Facebook, link: settings?.socials?.facebook, color: "hover:bg-blue-600 hover:border-blue-600" },
                                 { icon: Instagram, link: settings?.socials?.instagram, color: "hover:bg-pink-600 hover:border-pink-600" },
-                                { icon: Twitter, link: settings?.socials?.twitter, color: "hover:bg-sky-500 hover:border-sky-500" }
+                                { icon: Twitter, link: settings?.socials?.twitter, color: "hover:bg-sky-500 hover:border-sky-500" },
+
+                                { icon: Youtube, link: settings?.socials?.youtube, color: "hover:bg-red-600 hover:border-red-600" },
+                                { icon: Send, link: settings?.socials?.telegram, color: "hover:bg-sky-600 hover:border-sky-600" },
+                                { icon: MessageCircle, link: settings?.socials?.wechat, color: "hover:bg-emerald-600 hover:border-emerald-600" },
+                                { icon: MessageSquare, link: settings?.socials?.zalo, color: "hover:bg-indigo-600 hover:border-indigo-600" },
                             ].map((social, idx) => (
-                                social.link && (
+                                social.link && social.link !== "#" && (
                                     <a
                                         key={idx}
                                         href={getLink(social.link)}

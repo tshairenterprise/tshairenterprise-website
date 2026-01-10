@@ -13,6 +13,10 @@ const siteSettingsSchema = new mongoose.Schema(
       facebook: { type: String, default: "#" },
       instagram: { type: String, default: "#" },
       twitter: { type: String, default: "#" },
+      youtube: { type: String, default: "#" },
+      telegram: { type: String, default: "#" }, // public channel / profile
+      wechat: { type: String, default: "#" },
+      zalo: { type: String, default: "#" },
     },
 
     whatsapp: {
