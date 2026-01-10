@@ -187,7 +187,7 @@ const ProductInfo = ({ product, siteSettings, userInfo }) => {
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/10 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-900/20">
                             {renderStars(product.rating || 0)}
-                            <span className="text-xs font-bold text-amber-700 dark:text-amber-500 ml-1">{product.rating || 4.8}</span>
+                            <span className="text-xs font-bold text-amber-700 dark:text-amber-500 ml-1">{Number(product.rating || 4.8).toFixed(1)}</span>
                         </div>
                         <span className="text-sm text-gray-400 dark:text-slate-500 font-medium">
                             Based on {product.reviewCount || 120} reviews

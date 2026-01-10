@@ -113,7 +113,7 @@ const ProductReviews = ({ product, userInfo }) => {
 
                 {product.rating > 0 && (
                     <div className="text-right">
-                        <div className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{product.rating}</div>
+                        <div className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{Number(product.rating).toFixed(1)}</div>
                         <div className="flex gap-1 justify-end my-1">{renderStars(product.rating)}</div>
                         <p className="text-xs font-medium text-gray-400 dark:text-slate-500 uppercase tracking-wider">Average Rating</p>
                     </div>
